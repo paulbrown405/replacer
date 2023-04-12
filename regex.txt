@@ -1,0 +1,140 @@
+EXPLANATIONS OF THE REGEX PATTERNS USED IN note_getter.py
+
+Found around line 21 of note_getter.py:
+
+r'<p xml:id="(note-[0-9.]*)">'
+
+Prefacing a string with an r denotes a raw string and allows backslashes to be treated as literals.
+Tthe raw string is not technically needed here, since we have no literal backslashes in our regular expression,
+but it is the convention to sue them when using regular expressions.
+
+This regular expression says: "match with the literal string
+
+<p xml:id="note-
+
+followed by any digit from 0-9 or a full-stop occuring any number of times
+
+[0-9.]*
+
+followed by the literal string
+
+">
+
+The pattern also adds an opening parenthetical bracket before 'note'
+to mark the start of a capturing group -- see notes on this below --
+The capturing group is closed by a closing parenthetical bracket
+after the asterisk.
+
+NOTE ON CAPTURING GROUP: A capturing group has no impact on the
+pattern matching, the engine continues as though it were not there,
+but it means the capturing group can be sliced out from the rest of
+the pattern when needed so we can isolate that section. We do this
+when writing to a dictionary -- we keep just the capture group:
+so, note-523.1 or note-145.4.5 is kept and not <p xml:id="note-523.1">
+or <p xml:id="note-145.4.5">.
+
+========================
+Found around line 63 of note_getter.py:
+
+current_string = r'<p xml:id="' + key + '"> ?' + key[5:] + '\.? {1,2}'
+new_string = r'<p xml:id="' + value + '">' + value[5:] + '. '
+
+Look for this as a literal string:
+
+<p xml:id="
+
+plus the string of the dictionary's key currently being examined in the for loop.
+Something like 
+
+note-54.2 or note-825.1.1
+
+then the literal string 
+
+">
+
+then a space appearing zero or one times:
+
+ ?
+
+plus the string of the dictionary's key starting from the 5th character and continuing to the end
+(this chops off the "note-" at the start of the string) so we get something like
+
+98 or 325.6
+
+then a full-stop appearing zero or one times, where the backslash denotes a literal full-stop
+
+\.?
+
+then a space appearing one or two times
+
+ {1,2}
+
+This pattern is then replaced with this: the literal string
+
+<p xml:id="
+
+plus the string of the dictionary's value currently being examined in the for loop.
+Something like 
+
+note-2 or note-35
+
+then the literal string 
+
+">
+
+then the string of the dictionary's value starting from the 5th character and continuing to the end
+(this chops off the "note-" at the start of the string) so we get something like
+
+98 or 103
+
+then the literal string
+
+. 
+
+That's a full-stop followed by a space.
+
+========================
+Found around line 71 of note_getter.py:
+
+current_string = r'(assets\/)([a-zA-Z]{1,2}-[0-9]{1,3}.png)'
+new_string = r'image.html?asset=\2'
+
+This pattern looks for the literal string
+
+assets
+
+we use the backslash to mark the forward slash as a literal
+
+\/
+
+all of that is enclosed in parenthetical brackets to form a capturing
+group
+
+then we start a new capturing group where we look for any alphabetical
+character, upper or lowercase, occuring one or two times
+
+[a-zA-Z]{1,2}
+
+followed by a literal hyphen
+
+-
+
+followed by any numerical character occuring 1 to 3 times
+
+[0-9]{1,3}
+
+followed by the literal string
+
+.png
+
+then ending the second capturing group.
+
+When this pattern is found, it is replaced with the literal string:
+
+image.html?asset=
+
+followed by whatever the contents of the second capturing group were,
+denoted as
+
+\2
+
